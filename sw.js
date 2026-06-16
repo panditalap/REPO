@@ -54,9 +54,21 @@ self.addEventListener("fetch",event=>{
 async function handleShare(event){
     const formData = await event.request.formData();
     const files = formData.getAll("images");
+    await clearStore();
     await saveFiles(files);
     return Response.redirect(
         "/REPO/?shared=1",
         303
     );
+}
+
+async function clearStore(){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+        const tx = db.transaction(STORE,"readwrite");
+        const store = tx.objectStore(STORE);
+        const req = store.clear();
+        req.onsuccess = ()=>resolve();
+        req.onerror = ()=>reject(req.error);
+    });
 }
